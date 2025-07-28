@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 350px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      color: white;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .header p {
+      margin: 5px 0 0 0;
+      opacity: 0.8;
+      font-size: 14px;
+    }
+    
+    .input-group {
+      margin-bottom: 15px;
+    }
+    
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      background: white;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+    }
+    
+    .btn {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+    
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+    
+    .btn.danger {
+      background: rgba(255, 59, 48, 0.8);
+      border-color: rgba(255, 59, 48, 0.9);
+    }
+    
+    .btn.danger:hover {
+      background: rgba(255, 59, 48, 1);
+    }
+    
+    .companies-list {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    
+    .company-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .company-item:last-child {
+      border-bottom: none;
+    }
+    
+    .company-name {
+      flex: 1;
+      font-size: 14px;
+    }
+    
+    .remove-btn {
+      background: rgba(255, 59, 48, 0.6);
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    
+    .remove-btn:hover {
+      background: rgba(255, 59, 48, 0.8);
+    }
+    
+    .status {
+      text-align: center;
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      opacity: 0.7;
+      font-style: italic;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Job Filter</h1>
+    <p>Hide job postings from specific companies</p>
+  </div>
+  
+  <div class="input-group">
+    <label for="companyInput">Add company to block:</label>
+    <input type="text" id="companyInput" placeholder="Enter company name...">
+  </div>
+  
+  <button class="btn" id="addBtn">Add Company</button>
+  <button class="btn danger" id="clearBtn">Clear All</button>
+  
+  <div class="companies-list" id="companiesList">
+    <div class="empty-state">No companies blocked yet</div>
+  </div>
+  
+  <div class="status" id="status">
+    Ready to filter jobs
+  </div>
+  
+  <script src="popup.js"></script>
+</body>
+</html> 
