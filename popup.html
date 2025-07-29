@@ -7,7 +7,7 @@
       width: 350px;
       padding: 20px;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0077B5 0%, #003A9B 100%);
       margin: 0;
       color: white;
     }
@@ -84,6 +84,68 @@
       background: rgba(255, 59, 48, 1);
     }
     
+    .toggle-section {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    
+    .toggle-section h3 {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .toggle-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .toggle-item:last-child {
+      border-bottom: none;
+    }
+    
+    .toggle-label {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .toggle-switch.active {
+      background: #4CAF50;
+    }
+    
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border-radius: 50%;
+      transition: all 0.3s;
+    }
+    
+    .toggle-switch.active::after {
+      transform: translateX(20px);
+    }
+    
     .companies-list {
       max-height: 200px;
       overflow-y: auto;
@@ -145,11 +207,36 @@
 <body>
   <div class="header">
     <h1>Job Filter</h1>
-    <p>Hide job postings from specific companies</p>
+    <p>Hide job postings based on filter criteria</p>
+  </div>
+  
+  <div class="toggle-section">
+    <h3>Filter Options</h3>
+    <div class="toggle-item">
+      <div class="toggle-label">
+        <span>🚫</span>
+        <span>Already Applied Jobs</span>
+      </div>
+      <div class="toggle-switch" id="toggleApplied"></div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-label">
+        <span>💰</span>
+        <span>Promoted/Sponsored Jobs</span>
+      </div>
+      <div class="toggle-switch" id="togglePromoted"></div>
+    </div>
+    <div class="toggle-item">
+      <div class="toggle-label">
+        <span>🔄</span>
+        <span>Reposted Jobs</span>
+      </div>
+      <div class="toggle-switch" id="toggleReposted"></div>
+    </div>
   </div>
   
   <div class="input-group">
-    <label for="companyInput">Add company to block:</label>
+    <label for="companyInput">Add company to hide:</label>
     <input type="text" id="companyInput" placeholder="Enter company name...">
   </div>
   
@@ -157,7 +244,7 @@
   <button class="btn danger" id="clearBtn">Clear All</button>
   
   <div class="companies-list" id="companiesList">
-    <div class="empty-state">No companies blocked yet</div>
+    <div class="empty-state">No companies hidden yet</div>
   </div>
   
   <div class="status" id="status">

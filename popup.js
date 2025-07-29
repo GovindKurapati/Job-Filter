@@ -4,14 +4,25 @@ const addBtn = document.getElementById('addBtn');
 const clearBtn = document.getElementById('clearBtn');
 const companiesList = document.getElementById('companiesList');
 const status = document.getElementById('status');
+const toggleApplied = document.getElementById('toggleApplied');
+const togglePromoted = document.getElementById('togglePromoted');
+const toggleReposted = document.getElementById('toggleReposted');
 
-// Load blocked companies from storage
+// Load blocked companies and filter settings from storage
 let blockedCompanies = [];
+let filterSettings = {
+  hideApplied: false,
+  hidePromoted: false,
+  hideReposted: false
+};
 
 // Initialize popup
 document.addEventListener('DOMContentLoaded', async () => {
   await loadBlockedCompanies();
+  await loadFilterSettings();
   renderCompaniesList();
+  renderToggleStates();
+  checkCurrentTab();
   
   // Add event listeners
   addBtn.addEventListener('click', addCompany);
@@ -21,7 +32,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       addCompany();
     }
   });
+  
+  // Add toggle event listeners
+  toggleApplied.addEventListener('click', () => toggleFilter('hideApplied'));
+  togglePromoted.addEventListener('click', () => toggleFilter('hidePromoted'));
+  toggleReposted.addEventListener('click', () => toggleFilter('hideReposted'));
 });
+
+// Check if current tab is a supported job site
+async function checkCurrentTab() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab && (tab.url.includes('linkedin.com/jobs') || tab.url.includes('indeed.com'))) {
+      updateStatus('Extension active on this page');
+    } else {
+      updateStatus('Visit LinkedIn Jobs or Indeed to use filters');
+    }
+  } catch (error) {
+    console.error('Error checking current tab:', error);
+    updateStatus('Ready to filter jobs');
+  }
+}
 
 // Load blocked companies from Chrome storage
 async function loadBlockedCompanies() {
@@ -32,6 +63,51 @@ async function loadBlockedCompanies() {
     console.error('Error loading blocked companies:', error);
     blockedCompanies = [];
   }
+}
+
+// Load filter settings from Chrome storage
+async function loadFilterSettings() {
+  try {
+    const result = await chrome.storage.sync.get(['filterSettings']);
+    filterSettings = result.filterSettings || {
+      hideApplied: false,
+      hidePromoted: false,
+      hideReposted: false
+    };
+  } catch (error) {
+    console.error('Error loading filter settings:', error);
+    filterSettings = {
+      hideApplied: false,
+      hidePromoted: false,
+      hideReposted: false
+    };
+  }
+}
+
+// Save filter settings to Chrome storage
+async function saveFilterSettings() {
+  try {
+    await chrome.storage.sync.set({ filterSettings });
+    updateStatus('Filter settings saved');
+  } catch (error) {
+    console.error('Error saving filter settings:', error);
+    updateStatus('Error saving filter settings');
+  }
+}
+
+// Toggle filter setting
+async function toggleFilter(setting) {
+  filterSettings[setting] = !filterSettings[setting];
+  await saveFilterSettings();
+  renderToggleStates();
+  notifyContentScript();
+}
+
+// Render toggle states
+function renderToggleStates() {
+  toggleApplied.classList.toggle('active', filterSettings.hideApplied);
+  togglePromoted.classList.toggle('active', filterSettings.hidePromoted);
+  toggleReposted.classList.toggle('active', filterSettings.hideReposted);
 }
 
 // Save blocked companies to Chrome storage
@@ -124,22 +200,35 @@ async function clearAllCompanies() {
 function updateStatus(message) {
   status.textContent = message;
   setTimeout(() => {
-    status.textContent = `Ready to filter jobs (${blockedCompanies.length} companies blocked)`;
+    const filterCount = Object.values(filterSettings).filter(Boolean).length;
+    const filterText = filterCount > 0 ? ` + ${filterCount} filters active` : '';
+    status.textContent = `Ready to filter jobs (${blockedCompanies.length} companies blocked${filterText})`;
   }, 2000);
 }
 
-// Notify content script to refresh blocked companies
+// Notify content script to refresh blocked companies and filter settings
 async function notifyContentScript() {
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab && (tab.url.includes('linkedin.com/jobs') || tab.url.includes('indeed.com'))) {
-      await chrome.tabs.sendMessage(tab.id, { 
-        type: 'UPDATE_BLOCKED_COMPANIES', 
-        companies: blockedCompanies 
-      });
+      // Check if content script is available before sending message
+      try {
+        await chrome.tabs.sendMessage(tab.id, { 
+          type: 'UPDATE_FILTER_SETTINGS', 
+          companies: blockedCompanies,
+          filterSettings: filterSettings
+        });
+      } catch (messageError) {
+        // Content script not loaded or not available
+        console.log('Content script not available on this page, settings saved for next page load');
+        updateStatus('Settings saved - will apply when you visit LinkedIn/Indeed');
+      }
+    } else {
+      updateStatus('Please visit LinkedIn Jobs or Indeed to apply filters');
     }
   } catch (error) {
     console.error('Error notifying content script:', error);
+    updateStatus('Settings saved - will apply when you visit LinkedIn/Indeed');
   }
 }
 

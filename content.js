@@ -4,6 +4,11 @@
 class JobFilter {
   constructor() {
     this.blockedCompanies = [];
+    this.filterSettings = {
+      hideApplied: false,
+      hidePromoted: false,
+      hideReposted: false
+    };
     this.isEnabled = true;
     this.observer = null;
     this.init();
@@ -11,6 +16,7 @@ class JobFilter {
 
   async init() {
     await this.loadBlockedCompanies();
+    await this.loadFilterSettings();
     this.setupMessageListener();
     this.startFiltering();
   }
@@ -27,14 +33,35 @@ class JobFilter {
     }
   }
 
+  // Load filter settings from storage
+  async loadFilterSettings() {
+    try {
+      const result = await chrome.storage.sync.get(['filterSettings']);
+      this.filterSettings = result.filterSettings || {
+        hideApplied: false,
+        hidePromoted: false,
+        hideReposted: false
+      };
+      console.log('Job Filter: Loaded filter settings:', this.filterSettings);
+    } catch (error) {
+      console.error('Job Filter: Error loading filter settings:', error);
+      this.filterSettings = {
+        hideApplied: false,
+        hidePromoted: false,
+        hideReposted: false
+      };
+    }
+  }
+
   // Setup message listener for popup communication
   setupMessageListener() {
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      if (message.type === 'UPDATE_BLOCKED_COMPANIES') {
+      if (message.type === 'UPDATE_FILTER_SETTINGS') {
         this.blockedCompanies = message.companies || [];
-        console.log('Job Filter: Updated blocked companies:', this.blockedCompanies);
+        this.filterSettings = message.filterSettings || this.filterSettings;
+        console.log('Job Filter: Updated filter settings:', this.filterSettings);
         
-        // Re-evaluate all jobs to show/hide based on new blocked list
+        // Re-evaluate all jobs to show/hide based on updated settings
         this.reEvaluateJobs();
       }
     });
@@ -99,9 +126,9 @@ class JobFilter {
     );
   }
 
-  // Main function to hide jobs from blocked companies
+  // Main function to hide jobs based on all filter criteria
   hideJobs() {
-    if (!this.isEnabled || this.blockedCompanies.length === 0) {
+    if (!this.isEnabled) {
       return;
     }
 
@@ -109,17 +136,19 @@ class JobFilter {
     let hiddenCount = 0;
 
     jobCards.forEach(card => {
-      const companyName = this.extractCompanyName(card);
-      
-      // Use comprehensive text matching with the entire card
-      if (this.isCompanyBlocked(companyName, card)) {
+      // Check if this specific job has been unblocked
+      if (card.hasAttribute('data-job-filter-unblocked')) {
+        return; // This specific job should not be hidden
+      }
+
+      if (this.shouldHideJob(card)) {
         this.hideJobCard(card);
         hiddenCount++;
       }
     });
 
     if (hiddenCount > 0) {
-      console.log(`Job Filter: Hidden ${hiddenCount} job postings from blocked companies`);
+      console.log(`Job Filter: Hidden ${hiddenCount} job postings based on filter criteria`);
     }
   }
 
@@ -145,9 +174,9 @@ class JobFilter {
     let shownCount = 0;
 
     jobCards.forEach(card => {
-      const companyName = this.extractCompanyName(card);
       const isCurrentlyHidden = card.hasAttribute('data-job-filter-hidden');
-      const shouldBeHidden = this.isCompanyBlocked(companyName, card);
+      const isSpecificallyUnblocked = card.hasAttribute('data-job-filter-unblocked');
+      const shouldBeHidden = this.shouldHideJob(card) && !isSpecificallyUnblocked;
 
       if (shouldBeHidden && !isCurrentlyHidden) {
         this.hideJobCard(card);
@@ -262,6 +291,18 @@ class JobFilter {
       .toLowerCase();
   }
 
+  // Get footer text from job card for status detection
+  getFooterText(card) {
+    if (!card) return '';
+    
+    const footerWrapper = card.querySelector('.job-card-list__footer-wrapper');
+    if (footerWrapper) {
+      return footerWrapper.textContent.toLowerCase().trim();
+    }
+    
+    return '';
+  }
+
   // Check if a company is in the blocked list
   isCompanyBlocked(companyName, card) {
     if (!companyName && !card) return false;
@@ -290,24 +331,168 @@ class JobFilter {
     return false;
   }
 
+  // Check if job should be hidden based on filter settings
+  shouldHideJob(card) {
+    if (!card) return false;
+    
+    // Check company blocking
+    const companyName = this.extractCompanyName(card);
+    if (this.isCompanyBlocked(companyName, card)) {
+      return true;
+    }
+    
+    // Check if job is already applied
+    if (this.filterSettings.hideApplied && this.isJobApplied(card)) {
+      return true;
+    }
+    
+    // Check if job is promoted/sponsored
+    if (this.filterSettings.hidePromoted && this.isJobPromoted(card)) {
+      return true;
+    }
+    
+    // Check if job is reposted
+    if (this.filterSettings.hideReposted && this.isJobReposted(card)) {
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Check if job is already applied
+  isJobApplied(card) {
+    const isLinkedIn = window.location.hostname.includes('linkedin.com');
+    const isIndeed = window.location.hostname.includes('indeed.com');
+    
+    if (isLinkedIn) {
+      // Check for footer wrapper with "Applied" text
+      const footerText = this.getFooterText(card);
+      if (footerText && footerText.includes('applied')) {
+        return true;
+      }
+      
+      // Fallback to other LinkedIn applied job indicators
+      const appliedSelectors = [
+        '[data-testid="job-card-applied"]',
+        '.job-card-container__applied',
+        '.artdeco-inline-feedback--success',
+        '[aria-label*="Applied"]',
+        '.job-card-container__status--applied'
+      ];
+      
+      return appliedSelectors.some(selector => card.querySelector(selector));
+    } else if (isIndeed) {
+      // Indeed applied job indicators
+      const appliedSelectors = [
+        '[data-testid="applied-job"]',
+        '.jobsearch-ResultsList .applied',
+        '[aria-label*="Applied"]'
+      ];
+      
+      return appliedSelectors.some(selector => card.querySelector(selector));
+    }
+    
+    return false;
+  }
+
+  // Check if job is promoted/sponsored
+  isJobPromoted(card) {
+    const isLinkedIn = window.location.hostname.includes('linkedin.com');
+    const isIndeed = window.location.hostname.includes('indeed.com');
+    
+    if (isLinkedIn) {
+      // Check for footer wrapper with "Promoted" or "Sponsored" text
+      const footerText = this.getFooterText(card);
+      if (footerText && (footerText.includes('promoted') || footerText.includes('sponsored'))) {
+        return true;
+      }
+      
+      // Fallback to other LinkedIn promoted job indicators
+      const promotedSelectors = [
+        '[data-testid="job-card-promoted"]',
+        '.job-card-container__promoted',
+        '[aria-label*="Promoted"]',
+        '.job-card-container__sponsored',
+        '[data-testid="job-card-sponsored"]'
+      ];
+      
+      return promotedSelectors.some(selector => card.querySelector(selector));
+    } else if (isIndeed) {
+      // Indeed promoted job indicators
+      const promotedSelectors = [
+        '[data-testid="promoted-job"]',
+        '.jobsearch-ResultsList .promoted',
+        '[aria-label*="Promoted"]',
+        '.jobsearch-ResultsList .sponsored'
+      ];
+      
+      return promotedSelectors.some(selector => card.querySelector(selector));
+    }
+    
+    return false;
+  }
+
+  // Check if job is reposted
+  isJobReposted(card) {
+    const isLinkedIn = window.location.hostname.includes('linkedin.com');
+    const isIndeed = window.location.hostname.includes('indeed.com');
+    
+    if (isLinkedIn) {
+      // Check for footer wrapper with "Reposted" text
+      const footerText = this.getFooterText(card);
+      if (footerText && footerText.includes('reposted')) {
+        return true;
+      }
+      
+      // Fallback to other LinkedIn reposted job indicators
+      const repostedSelectors = [
+        '[data-testid="job-card-reposted"]',
+        '.job-card-container__reposted',
+        '[aria-label*="Reposted"]',
+        '.job-card-container__repost'
+      ];
+      
+      return repostedSelectors.some(selector => card.querySelector(selector));
+    } else if (isIndeed) {
+      // Indeed reposted job indicators
+      const repostedSelectors = [
+        '[data-testid="reposted-job"]',
+        '.jobsearch-ResultsList .reposted',
+        '[aria-label*="Reposted"]'
+      ];
+      
+      return repostedSelectors.some(selector => card.querySelector(selector));
+    }
+    
+    return false;
+  }
+
   // Hide a job card
   hideJobCard(card) {
-    if (card.style.display === 'none') {
+    if (card.hasAttribute('data-job-filter-hidden')) {
       return; // Already hidden
+    }
+
+    // Check if this specific job has been unblocked
+    if (card.hasAttribute('data-job-filter-unblocked')) {
+      return; // This specific job should not be hidden
     }
 
     // Mark the card as hidden by our extension
     card.setAttribute('data-job-filter-hidden', 'true');
 
-    // Add a subtle fade-out effect
-    card.style.transition = 'opacity 0.3s ease-out';
-    card.style.opacity = '0';
+    // Apply blur and reduced opacity instead of hiding
+    card.style.transition = 'all 0.3s ease-out';
+    card.style.filter = 'blur(2px)';
+    card.style.opacity = '0.3';
+    card.style.pointerEvents = 'none'; // Prevent interaction
     
-    setTimeout(() => {
-      card.style.display = 'none';
-      card.style.opacity = '';
-      card.style.transition = '';
-    }, 300);
+    // Add a subtle visual indicator
+    card.style.border = '1px solid rgba(255, 0, 0, 0.2)';
+    card.style.borderRadius = '4px';
+    
+    // Add unblock button
+    this.addUnblockButton(card);
   }
 
   // Show a previously hidden job card
@@ -319,22 +504,120 @@ class JobFilter {
     // Remove our hidden marker
     card.removeAttribute('data-job-filter-hidden');
 
-    // Show the card with fade-in effect
-    card.style.transition = 'opacity 0.3s ease-in';
-    card.style.display = '';
-    card.style.opacity = '0';
-    
-    // Trigger reflow
-    card.offsetHeight;
-    
-    setTimeout(() => {
-      card.style.opacity = '1';
-    }, 10);
+    // Remove unblock button if it exists
+    this.removeUnblockButton(card);
+
+    // Restore the card to normal appearance
+    card.style.transition = 'all 0.3s ease-in';
+    card.style.filter = '';
+    card.style.opacity = '';
+    card.style.pointerEvents = '';
+    card.style.border = '';
+    card.style.borderRadius = '';
     
     setTimeout(() => {
       card.style.transition = '';
-      card.style.opacity = '';
     }, 300);
+  }
+
+  // Add unblock button to a job card
+  addUnblockButton(card) {
+    // Remove existing button if any
+    this.removeUnblockButton(card);
+    
+    // Create a separate overlay div that sits on top of everything
+    const overlay = document.createElement('div');
+    overlay.className = 'job-filter-unblock-overlay';
+    overlay.innerHTML = '<button class="job-filter-unblock-btn">👁️ Unblock</button>';
+    
+    // Style the overlay
+    Object.assign(overlay.style, {
+      position: 'absolute',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      zIndex: '999999',
+      pointerEvents: 'none', // Allow clicks to pass through to job card
+      display: 'flex',
+      justifyContent: 'flex-end',
+      alignItems: 'flex-start',
+      padding: '10px'
+    });
+    
+    // Style the button
+    const button = overlay.querySelector('.job-filter-unblock-btn');
+    Object.assign(button.style, {
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '1px solid #ff4444',
+      borderRadius: '4px',
+      padding: '4px 8px',
+      fontSize: '12px',
+      cursor: 'pointer',
+      color: '#ff4444',
+      fontWeight: 'bold',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+      transition: 'all 0.2s ease',
+      filter: 'none',
+      backdropFilter: 'none',
+      transform: 'translateZ(0)',
+      isolation: 'isolate',
+      pointerEvents: 'auto', // Make button clickable
+      border: 'none',
+      outline: 'none'
+    });
+    
+    // Add hover effects
+    button.addEventListener('mouseenter', () => {
+      button.style.background = '#ff4444';
+      button.style.color = 'white';
+      button.style.transform = 'translateZ(0) scale(1.05)';
+    });
+    
+    button.addEventListener('mouseleave', () => {
+      button.style.background = 'rgba(255, 255, 255, 0.98)';
+      button.style.color = '#ff4444';
+      button.style.transform = 'translateZ(0) scale(1)';
+    });
+    
+    // Add click handler
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.unblockSpecificJob(card);
+    });
+    
+    // Make card position relative if it isn't already
+    if (getComputedStyle(card).position === 'static') {
+      card.style.position = 'relative';
+    }
+    
+    // Add overlay to card
+    card.appendChild(overlay);
+  }
+
+  // Remove unblock button from a job card
+  removeUnblockButton(card) {
+    const existingOverlay = card.querySelector('.job-filter-unblock-overlay');
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+  }
+
+  // Unblock specific job (not the entire company)
+  async unblockSpecificJob(card) {
+    const jobId = card.getAttribute('data-occludable-job-id');
+    if (!jobId) {
+      console.log('Job Filter: Could not find job ID for this card');
+      return;
+    }
+    
+    // Mark this specific job as unblocked
+    card.setAttribute('data-job-filter-unblocked', 'true');
+    
+    // Show this specific job
+    this.showJobCard(card);
+    
+    console.log(`Job Filter: Unblocked specific job with ID: ${jobId}`);
   }
 
   // Enable/disable filtering

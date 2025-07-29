@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Job Filter",
-    "version": "1.0",
-    "description": "Hides job listings from specific companies.",
+    "version": "1.0.0",
+    "description": "Hides job listings based on filter criteria.",
     "permissions": ["activeTab", "scripting", "storage"],
     "action": {
       "default_popup": "popup.html",
