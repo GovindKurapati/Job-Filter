@@ -1,102 +1,194 @@
-# Job Filter Chrome Extension
+# Job Filter - Chrome Extension
 
-A Chrome extension that hides job postings from specific companies on LinkedIn and Indeed.
+A powerful Chrome extension that intelligently filters job postings on LinkedIn. Hide unwanted companies, filter out applied jobs, promoted posts, and reposted positions with a beautiful blur effect.
 
-## Features
+## ✨ Features
 
-- **Easy Management**: Add and remove companies from your blocked list through a beautiful popup interface
-- **Persistent Storage**: Your blocked companies list is saved and synced across devices
-- **Real-time Filtering**: Jobs are filtered as soon as they appear on the page
-- **Multiple Job Sites**: Works on LinkedIn Jobs and Indeed
-- **Smart Matching**: Uses partial matching to catch variations in company names
-- **Smooth Animations**: Jobs fade out smoothly when hidden
+### 🎯 **Smart Job Filtering**
+- **Company Blocking**: Hide jobs from specific companies
+- **Applied Jobs**: Automatically hide jobs you've already applied to
+- **Promoted Jobs**: Filter out sponsored/promoted job postings
+- **Reposted Jobs**: Hide jobs that have been reposted
+- **Individual Unblocking**: Unblock specific jobs while keeping others filtered
 
-## Installation
+### 🎨 **Beautiful User Experience**
+- **Blur Effect**: Jobs are blurred instead of hidden for better UX
+- **Unblock Button**: Click to unblock specific jobs directly from the interface
+- **Real-time Filtering**: Jobs are filtered as soon as they load
+- **Smooth Animations**: Elegant fade effects when hiding/showing jobs
 
-1. **Download the Extension Files**
-   - Download all files in this folder to your computer
+### 🔧 **Advanced Features**
+- **Cross-platform Sync**: Settings sync across all your devices
+- **Persistent Storage**: Your preferences are saved between sessions
+- **Smart Detection**: Uses LinkedIn's footer text for accurate job status detection
+- **Comprehensive Matching**: Searches entire job card text for company names
 
-2. **Load in Chrome**
-   - Open Chrome and go to `chrome://extensions/`
-   - Enable "Developer mode" in the top right
-   - Click "Load unpacked" and select the folder containing these files
+## 🚀 Installation
 
-3. **Start Using**
-   - Navigate to LinkedIn Jobs or Indeed
-   - Click the extension icon in your toolbar
-   - Add companies you want to block
+### **Manual Installation (Developer)**
+1. Download all files to a folder
+2. Open Chrome and go to `chrome://extensions/`
+3. Enable "Developer mode" (top-right toggle)
+4. Click "Load unpacked" and select your folder
+5. Pin the extension to your toolbar
 
-## How to Use
+## 📖 How to Use
 
-### Adding Companies to Block
-1. Click the extension icon in your Chrome toolbar
+### **Adding Companies to Block**
+1. Click the extension icon in your toolbar
 2. Type a company name in the input field
 3. Click "Add Company" or press Enter
-4. The company will be added to your blocked list
+4. Jobs from that company will be immediately blurred
 
-### Removing Companies
-1. Click the extension icon
-2. Find the company in your blocked list
-3. Click the "Remove" button next to it
+### **Using Filter Toggles**
+- **🚫 Already Applied Jobs**: Hide jobs you've already applied to
+- **💰 Promoted/Sponsored Jobs**: Filter out paid job postings
+- **🔄 Reposted Jobs**: Hide jobs that have been reposted
 
-### Clearing All Companies
-1. Click the extension icon
-2. Click "Clear All" to remove all blocked companies
+### **Unblocking Specific Jobs**
+- Click the "👁️ Unblock" button on any blurred job card
+- Only that specific job will be unblocked
+- Other jobs from the same company remain filtered
 
-## Supported Websites
+### **Managing Your List**
+- **Remove Companies**: Click "Remove" next to any company
+- **Clear All**: Click "Clear All" to remove all blocked companies
+- **Real-time Updates**: Changes apply immediately
+
+## 🎯 Supported Websites
 
 - **LinkedIn Jobs**: `linkedin.com/jobs/*`
-- **Indeed**: `indeed.com/*`
 
-## How It Works
+## 🔧 How It Works
 
-The extension:
-1. Loads your blocked companies list from Chrome storage
-2. Scans job postings on supported websites
-3. Extracts company names from job cards
-4. Hides jobs from companies in your blocked list
-5. Uses a mutation observer to catch new jobs as they load
-6. Provides smooth fade-out animations when hiding jobs
+### **Smart Job Detection**
+1. **Company Matching**: Searches entire job card text for company names
+2. **Status Detection**: Uses LinkedIn's footer text for job status
+3. **Real-time Filtering**: Monitors page changes and filters new jobs
+4. **Individual Control**: Allows unblocking specific jobs
 
-## Technical Details
+### **Technical Features**
+- **Mutation Observer**: Watches for new job cards as they load
+- **Comprehensive Text Search**: Searches all text in job cards
+- **Cross-device Sync**: Settings saved to Chrome sync storage
+- **Performance Optimized**: Efficient filtering without page slowdown
 
-- **Manifest Version**: 3 (latest Chrome extension standard)
-- **Permissions**: 
-  - `activeTab`: To interact with job sites
-  - `scripting`: To inject content scripts
-  - `storage`: To save your blocked companies list
-- **Content Scripts**: Automatically injected on LinkedIn and Indeed job pages
-- **Storage**: Uses Chrome's sync storage for cross-device synchronization
+## 🎨 Visual Design
 
-## Troubleshooting
+### **Professional Interface**
+- **LinkedIn/Indeed Colors**: Blue gradient matching brand colors
+- **Modern UI**: Clean, professional popup interface
+- **Toggle Switches**: Easy-to-use filter controls
+- **Status Indicators**: Clear feedback on current settings
 
-**Extension not working?**
+### **Job Card Effects**
+- **Blur Effect**: Jobs are blurred with reduced opacity
+- **Smooth Transitions**: Elegant fade animations
+- **Unblock Button**: Clearly visible on filtered jobs
+- **Visual Feedback**: Red border indicates filtered status
+
+## 📁 Project Structure
+
+```
+job-filter/
+├── manifest.json          # Extension configuration
+├── popup.html            # Extension popup interface
+├── popup.js              # Popup functionality
+├── content.js            # Main filtering logic
+├── icon.svg              # Extension icon
+└── README.md             # This file
+```
+
+## 🔧 Technical Details
+
+### **Manifest Version**: 3 (Latest Chrome extension standard)
+### **Permissions**:
+- `activeTab`: To interact with job sites
+- `scripting`: To inject content scripts
+- `storage`: To save your settings
+
+### **Content Scripts**: Automatically injected on LinkedIn and Indeed job pages
+### **Storage**: Uses Chrome's sync storage for cross-device synchronization
+
+## 🐛 Troubleshooting
+
+### **Extension Not Working?**
 - Make sure you're on LinkedIn Jobs or Indeed
 - Check the browser console for any error messages
 - Try refreshing the page
+- Verify the extension is enabled
 
-**Jobs not being hidden?**
+### **Jobs Not Being Hidden?**
 - Company names might be slightly different than expected
 - Try adding variations of the company name
 - Check that the extension is enabled
+- Verify you're on a supported job site
 
-**Popup not opening?**
-- Right-click the extension icon and select "Inspect popup" to see any errors
+### **Popup Not Opening?**
+- Right-click the extension icon and select "Inspect popup"
+- Check for any JavaScript errors
 - Make sure all files are in the same folder
 
-## Development
+### **Settings Not Saving?**
+- Check that you're signed into Chrome
+- Verify sync is enabled in Chrome settings
+- Try refreshing the extension
 
-To modify the extension:
+## 🚀 Development
+
+### **To Modify the Extension:**
 1. Edit the files as needed
 2. Go to `chrome://extensions/`
 3. Click the refresh icon on the Job Filter extension
 4. Test your changes
 
-## Files Overview
-
+### **Key Files to Modify:**
+- `content.js`: Main filtering logic and job detection
+- `popup.js`: Popup interface functionality
+- `popup.html`: UI layout and styling
 - `manifest.json`: Extension configuration
-- `content.js`: Main filtering logic
-- `popup.html`: Extension popup interface
-- `popup.js`: Popup functionality
-- `icon.svg`: Extension icon
-- `README.md`: This file 
+
+## 📊 Features Overview
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| Company Blocking | Hide jobs from specific companies | ✅ |
+| Applied Job Filtering | Hide jobs you've already applied to | ✅ |
+| Promoted Job Filtering | Hide sponsored/promoted jobs | ✅ |
+| Reposted Job Filtering | Hide reposted jobs | ✅ |
+| Individual Unblocking | Unblock specific jobs | ✅ |
+| Blur Effect | Visual blur instead of hiding | ✅ |
+| Real-time Filtering | Filter jobs as they load | ✅ |
+| Cross-device Sync | Settings sync across devices | ✅ |
+| LinkedIn Support | Works on LinkedIn Jobs | ✅ |
+| Indeed Support | Works on Indeed | ✅ |
+
+## 🤝 Contributing
+
+### **Suggestions Welcome!**
+- Report bugs or issues
+- Suggest new features
+- Improve the documentation
+- Share your experience
+
+### **Development Setup:**
+1. Clone or download the project
+2. Load as unpacked extension in Chrome
+3. Make your changes
+4. Test thoroughly
+5. Submit your improvements
+
+## 📄 License
+
+This project is open source and available under the MIT License.
+
+## 🙏 Acknowledgments
+
+- **LinkedIn**: For providing job search platform
+- **Indeed**: For job search functionality
+- **Chrome Extensions API**: For the development platform
+- **Community**: For feedback and suggestions
+
+---
+
+**Job Filter** - Making your job search more focused and efficient! 🎯 
