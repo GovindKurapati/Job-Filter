@@ -1,6 +1,12 @@
 # Job Filter - Chrome Extension
 
-A powerful Chrome extension that intelligently filters job postings on LinkedIn. Hide unwanted companies, filter out applied jobs, promoted posts, and reposted positions with a beautiful blur effect.
+A powerful Chrome extension that filters job postings on LinkedIn. Hide unwanted companies, filter out applied jobs, promoted posts, and reposted positions with a beautiful blur effect.
+
+## 🎥 Demo
+
+![Job Filter Demo](Job-Filter-Demo.gif)
+
+*Watch the extension in action - filtering jobs with blur effects and individual unblocking*
 
 ## ✨ Features
 
@@ -98,70 +104,6 @@ job-filter/
 ├── icon.svg              # Extension icon
 └── README.md             # This file
 ```
-
-## 🔧 Technical Details
-
-### **Manifest Version**: 3 (Latest Chrome extension standard)
-### **Permissions**:
-- `activeTab`: To interact with job sites
-- `scripting`: To inject content scripts
-- `storage`: To save your settings
-
-### **Content Scripts**: Automatically injected on LinkedIn and Indeed job pages
-### **Storage**: Uses Chrome's sync storage for cross-device synchronization
-
-## 🐛 Troubleshooting
-
-### **Extension Not Working?**
-- Make sure you're on LinkedIn Jobs or Indeed
-- Check the browser console for any error messages
-- Try refreshing the page
-- Verify the extension is enabled
-
-### **Jobs Not Being Hidden?**
-- Company names might be slightly different than expected
-- Try adding variations of the company name
-- Check that the extension is enabled
-- Verify you're on a supported job site
-
-### **Popup Not Opening?**
-- Right-click the extension icon and select "Inspect popup"
-- Check for any JavaScript errors
-- Make sure all files are in the same folder
-
-### **Settings Not Saving?**
-- Check that you're signed into Chrome
-- Verify sync is enabled in Chrome settings
-- Try refreshing the extension
-
-## 🚀 Development
-
-### **To Modify the Extension:**
-1. Edit the files as needed
-2. Go to `chrome://extensions/`
-3. Click the refresh icon on the Job Filter extension
-4. Test your changes
-
-### **Key Files to Modify:**
-- `content.js`: Main filtering logic and job detection
-- `popup.js`: Popup interface functionality
-- `popup.html`: UI layout and styling
-- `manifest.json`: Extension configuration
-
-## 📊 Features Overview
-
-| Feature | Description | Status |
-|---------|-------------|--------|
-| Company Blocking | Hide jobs from specific companies | ✅ |
-| Applied Job Filtering | Hide jobs you've already applied to | ✅ |
-| Promoted Job Filtering | Hide sponsored/promoted jobs | ✅ |
-| Reposted Job Filtering | Hide reposted jobs | ✅ |
-| Individual Unblocking | Unblock specific jobs | ✅ |
-| Blur Effect | Visual blur instead of hiding | ✅ |
-| Real-time Filtering | Filter jobs as they load | ✅ |
-| Cross-device Sync | Settings sync across devices | ✅ |
-| LinkedIn Support | Works on LinkedIn Jobs | ✅ |
-| Indeed Support | Works on Indeed | ✅ |
 
 ## 🤝 Contributing
 
